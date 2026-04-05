@@ -1,0 +1,57 @@
+===========================================================
+          GIT & GITHUB HANDLEIDING - 7FLXHERBERG
+===========================================================
+
+Dit zijn de commando's die je ELKE DAG gebruikt om samen 
+te werken aan de website.
+
+-----------------------------------------------------------
+1. BEGINNEN (Aan het begin van je werkdag)
+-----------------------------------------------------------
+Voordat je gaat programmeren, haal je eerst de code van je 
+collega binnen zodat je op de nieuwste versie werkt:
+
+    git pull
+
+-----------------------------------------------------------
+2. JE WERK OPSLAAN EN DELEN (Als je iets hebt aangepast)
+-----------------------------------------------------------
+Volg altijd deze 3 stappen in de terminal:
+
+Stap A: Zet je wijzigingen klaar (Staging)
+    git add .
+
+Stap B: Maak een officieel opslagpunt (Commit)
+    git commit -m "Hier typ je wat je hebt veranderd"
+
+Stap C: Stuur het naar GitHub (Push)
+    git push
+
+-----------------------------------------------------------
+3. CONTROLEREN (Als je twijfelt)
+-----------------------------------------------------------
+Wil je zien wat er aan de hand is?
+
+- Kijken welke bestanden zijn aangepast:
+    git status
+
+- Kijken naar de laatste paar opslagpunten:
+    git log --oneline
+
+-----------------------------------------------------------
+4. BELANGRIJKE REGELS / TIPS
+-----------------------------------------------------------
+- NODE_MODULES: De map 'node_modules' wordt NOOIT gedeeld via 
+  Git. Als je collega iets nieuws heeft geïnstalleerd, 
+  typ dan na de 'git pull' even: 
+    npm install
+
+- FOUTMELDING BIJ PUSH? Als 'git push' niet werkt, heeft je 
+  collega waarschijnlijk al iets geüpload. Typ dan eerst 
+  weer 'git pull' om zijn werk binnen te halen, en probeer 
+  daarna pas weer je eigen 'push'.
+
+- GEHEIMEN: Zet NOOIT je echte wachtwoorden in bestanden die 
+  je pusht naar GitHub (let op je .env bestand!).
+
+===========================================================
