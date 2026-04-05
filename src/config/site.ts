@@ -25,6 +25,7 @@ export const siteConfig = {
     paypalClientId: "sb", // [SWAP THIS] with your real Client ID from developer.paypal.com
     iban: "BE48651233568427",
     noreplyEmail: "flxheber@7flxheberg.eu",
-    botApiUrl: "http://bot.7flxheberg.eu:3001" // Connected to Pterodactyl API 
+    botApiUrl: "http://bot.7flxheberg.eu:3001", // Connected to Pterodactyl API 
+    discordWebhookUrl: "YOUR_DISCORD_WEBHOOK_URL_HERE"
   }
 };

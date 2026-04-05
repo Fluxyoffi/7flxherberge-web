@@ -2,7 +2,7 @@ import { X, Trash2, Plus, Minus, ExternalLink, Copy, Check, ShoppingCart, LogIn,
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { animate, useMotionValue, useSpring } from "framer-motion";
 import { siteConfig } from "@/config/site";
 
@@ -42,56 +42,7 @@ export default function CartSidebar({ onLoginOpen }: { onLoginOpen: () => void }
   const [paymentMethod, setPaymentMethod] = useState<"paypal" | "iban" | null>(null);
   const [paypalLoaded, setPaypalLoaded] = useState(false);
 
-  // Load PayPal SDK dynamically
-  useEffect(() => {
-    if (showCheckout && paymentMethod === "paypal" && !paypalLoaded) {
-      const script = document.createElement("script");
-      script.src = `https://www.paypal.com/sdk/js?client-id=${siteConfig.payments.paypalClientId}&currency=EUR`;
-      script.addEventListener("load", () => setPaypalLoaded(true));
-      document.body.appendChild(script);
-    }
-  }, [showCheckout, paymentMethod, paypalLoaded]);
-
-  // Handle PayPal Button Rendering
-  useEffect(() => {
-    if (paypalLoaded && paymentMethod === "paypal") {
-      const container = document.getElementById("paypal-button-container");
-      if (container && container.innerHTML === "") {
-        (window as any).paypal.Buttons({
-          createOrder: (data: any, actions: any) => {
-            return actions.order.create({
-              purchase_units: [{
-                amount: { value: finalTotal.toFixed(2) },
-                description: `7Flx Heberg - Order ${Math.random().toString(36).substring(7).toUpperCase()}`
-              }]
-            });
-          },
-          onApprove: async (data: any, actions: any) => {
-            const details = await actions.order.capture();
-            handlePlaceOrder(details.id); // Place order with PayPal Capture ID
-          }
-        }).render("#paypal-button-container");
-      }
-    }
-  }, [paypalLoaded, paymentMethod, finalTotal]);
-
-  const handleCopy = () => {
-    const summary = cart.map((item) => `${item.name} x${item.quantity} — €${(item.price * item.quantity).toFixed(2)}`).join("\n");
-    const fullSummary = `Order Summary:\n${summary}\n\nTotal: €${finalTotal.toFixed(2)}${promo ? ` (Promo: ${promo.code})` : ""}`;
-    navigator.clipboard.writeText(fullSummary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleApplyPromo = async () => {
-    if (!promoInput) return;
-    setIsApplyingPromo(true);
-    const success = await applyPromo(promoInput);
-    setIsApplyingPromo(false);
-    if (!success) alert("Invalid promo code");
-  };
-
-  const handlePlaceOrder = async (paypalId?: string) => {
+  const handlePlaceOrder = useCallback(async (paypalId?: string) => {
     setIsPlacingOrder(true);
     const hasPremium = cart.some(item => item.tier === "premium");
     const id = paypalId ? `PP-${paypalId.substring(0, 8)}` : `7F-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
@@ -168,7 +119,58 @@ export default function CartSidebar({ onLoginOpen }: { onLoginOpen: () => void }
       setOrderId(id); // Set local ID even if API is missing, for the professional demo
     }
     setIsPlacingOrder(false);
+  }, [cart, discount, finalTotal, paymentMethod, promo, user, setIsPlacingOrder, setOrderId]);
+
+  const handleCopy = () => {
+    const summary = cart.map((item) => `${item.name} x${item.quantity} — €${(item.price * item.quantity).toFixed(2)}`).join("\n");
+    const fullSummary = `Order Summary:\n${summary}\n\nTotal: €${finalTotal.toFixed(2)}${promo ? ` (Promo: ${promo.code})` : ""}`;
+    navigator.clipboard.writeText(fullSummary);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
+
+  const handleApplyPromo = async () => {
+    if (!promoInput) return;
+    setIsApplyingPromo(true);
+    const success = await applyPromo(promoInput);
+    setIsApplyingPromo(false);
+    if (!success) alert("Invalid promo code");
+  };
+
+  // Load PayPal SDK dynamically
+  useEffect(() => {
+    if (showCheckout && paymentMethod === "paypal" && !paypalLoaded) {
+      const script = document.createElement("script");
+      script.src = `https://www.paypal.com/sdk/js?client-id=${siteConfig.payments.paypalClientId}&currency=EUR`;
+      script.addEventListener("load", () => setPaypalLoaded(true));
+      document.body.appendChild(script);
+    }
+  }, [showCheckout, paymentMethod, paypalLoaded]);
+
+  // Handle PayPal Button Rendering
+  useEffect(() => {
+    if (paypalLoaded && paymentMethod === "paypal") {
+      const container = document.getElementById("paypal-button-container");
+      if (container && container.innerHTML === "") {
+        (window as any).paypal.Buttons({
+          createOrder: (data: any, actions: any) => {
+            return actions.order.create({
+              purchase_units: [{
+                amount: { value: finalTotal.toFixed(2) },
+                description: `7Flx Heberg - Order ${Math.random().toString(36).substring(7).toUpperCase()}`
+              }]
+            });
+          },
+          onApprove: async (data: any, actions: any) => {
+            const details = await actions.order.capture();
+            handlePlaceOrder(details.id); // Place order with PayPal Capture ID
+          }
+        }).render("#paypal-button-container");
+      }
+    }
+  }, [paypalLoaded, paymentMethod, finalTotal, handlePlaceOrder]);
+
+
 
   const handleCopyOrderId = () => {
     if (orderId) {
